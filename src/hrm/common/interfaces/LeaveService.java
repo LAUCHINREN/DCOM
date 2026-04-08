@@ -1,0 +1,15 @@
+package hrm.common.interfaces;
+
+import hrm.common.model.LeaveApplication;
+import hrm.common.model.EmployeeProfile;
+
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.time.LocalDate;
+import java.util.List;
+public interface LeaveService extends Remote{
+
+    LeaveApplication applyLeave(String employeeId, String leaveType,
+                                LocalDate startDate, LocalDate endDate,
+                                String reason) throws RemoteException;
+}
