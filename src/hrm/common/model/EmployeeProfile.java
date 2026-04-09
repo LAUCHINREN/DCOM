@@ -17,6 +17,8 @@ public class EmployeeProfile implements Serializable {
     private String emergencyName;
     private String emergencyContact;
     private String relationship;
+    private String gender;
+    private LocalDate dob;
 
     public EmployeeProfile() {}
 
@@ -46,6 +48,12 @@ public class EmployeeProfile implements Serializable {
 
     public String getRelationship() { return relationship; }
     public void setRelationship(String relationship) { this.relationship = relationship; }
+
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
+
+    public LocalDate getDob() { return dob; }
+    public void setDob(LocalDate dob) { this.dob = dob; }
 
     public String getIdentificationNum() { return identificationNum; }
 

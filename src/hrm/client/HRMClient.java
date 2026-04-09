@@ -288,6 +288,20 @@ public class HRMClient {
         System.out.print("Email: ");
         String email = sc.nextLine();
 
+        System.out.print("Gender (M/F): ");
+        String gender = sc.nextLine();
+
+        LocalDate dob = null;
+        while (dob == null) {
+            System.out.print("Date of Birth (yyyy-MM-dd): ");
+            String dobInput = sc.nextLine();
+            try {
+                dob = LocalDate.parse(dobInput);
+            } catch (Exception e) {
+                System.out.println("[Warning] Invalid date format!");
+            }
+        }
+
         System.out.print("Emergency Contact Name: ");
         String ecName = sc.nextLine();
 
@@ -304,6 +318,8 @@ public class HRMClient {
             profile.setEmail(email);
             profile.setEmergencyName(ecName);
             profile.setEmergencyContact(ecPhone);
+            profile.setGender(gender);
+            profile.setDob(dob);
 
             service.updateEmployeeProfile(profile);
 

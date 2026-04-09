@@ -11,14 +11,16 @@ public class EmployeeDAO {
     public EmployeeProfile updateEmployeeProfile(EmployeeProfile profile) throws Exception {
 
         Connection conn = DBConnection.getConnection();
-        String sql1 = "UPDATE employee SET first_name = ?, last_name = ?, contact_num = ?, email = ? WHERE emp_id = ?";
+        String sql1 = "UPDATE employee SET first_name = ?, last_name = ?, contact_num = ?, email = ?, gender = ?, dob = ? WHERE emp_id = ?";
 
         try (PreparedStatement ps = conn.prepareStatement(sql1)) {
             ps.setString(1, profile.getFirstName());
             ps.setString(2, profile.getLastName());
             ps.setString(3, profile.getContactNum());
             ps.setString(4, profile.getEmail());
-            ps.setObject(5, UUID.fromString(profile.getEmpId()));
+            ps.setString(5, profile.getGender());
+            ps.setObject(6, profile.getDob());
+            ps.setObject(7, UUID.fromString(profile.getEmpId()));
             ps.executeUpdate();
         }
 
