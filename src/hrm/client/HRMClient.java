@@ -3,6 +3,10 @@ package hrm.client;
 import hrm.common.interfaces.LeaveService;
 import hrm.common.model.LeaveApplication;
 import hrm.common.interfaces.EmployeeService;
+import hrm.common.interfaces.LoginService;
+import hrm.common.model.User;
+import hrm.common.interfaces.UserService;
+import hrm.common.model.EmployeeProfile;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -30,11 +34,15 @@ public class HRMClient {
 
         LeaveService leaveService;
         EmployeeService employeeService;
+        LoginService loginService;
+        UserService userService;
 
         try {
             Registry registry = LocateRegistry.getRegistry(SERVER_HOST, RMI_PORT);
             leaveService = (LeaveService) registry.lookup("LeaveService");
             employeeService = (EmployeeService) registry.lookup("EmployeeService");
+            loginService = (LoginService) registry.lookup("LoginService");
+            userService = (UserService) registry.lookup("UserService");
         } catch (Exception e) {
             System.err.println("[Client] Cannot connect to server: " + e.getMessage());
             System.err.println("Make sure HRMServer is running on " + SERVER_HOST + ":" + RMI_PORT);
@@ -43,32 +51,124 @@ public class HRMClient {
         //endregion
 
         while (true) {
-            System.out.println("\n===============================");
-            System.out.println("        HRM SYSTEM");
-            System.out.println("===============================");
-            System.out.println("1. Apply Leave");
-            System.out.println("2. Update Profile");
-            System.out.println("3. Exit");
-            System.out.print("Choose option: ");
 
-            String choice = sc.nextLine();
+            // ================= LOGIN =================
+            User user = null;
+            int attempts = 0;
 
-            switch (choice) {
-                case "1":
-                    applyLeave(leaveService, sc);
-                    break;
+            while (user == null && attempts < 3) {
+                System.out.println("===== LOGIN =====");
 
-                case "2":
-                    updateProfile(employeeService, sc);
-                    break;
+                System.out.print("Username: ");
+                String username = sc.nextLine();
 
-                case "3":
-                    System.out.println("Exiting...");
-                    sc.close();
+                System.out.print("Password: ");
+                String password = sc.nextLine();
+
+                try {
+                    user = loginService.login(username, password);
+                } catch (Exception e) {
+                    System.err.println("Login service error: " + e.getMessage());
                     return;
+                }
 
-                default:
-                    System.out.println("Invalid choice!");
+                if (user == null) {
+                    attempts++;
+                    System.out.println("Invalid username or password! Attempts left: " + (3 - attempts) + "\n");
+                }
+            }
+
+            if (user == null) {
+                System.out.println("Too many failed attempts. Exiting...");
+                return;
+            }
+
+            System.out.println("Login successful!");
+            System.out.println("Role: " + user.getRole());
+
+            // ================= MENU =================
+            while (true) {
+                System.out.println("\n===============================");
+                System.out.println("        HRM SYSTEM");
+                System.out.println("===============================");
+
+                if ("EMPLOYEE".equalsIgnoreCase(user.getRole())) {
+                    System.out.println("1. Apply Leave");
+                    System.out.println("2. Update Profile");
+                } else if ("HR".equalsIgnoreCase(user.getRole())) {
+                    System.out.println("1. Approve Leave (Coming Soon)");
+                    System.out.println("2. Manage Employees (Coming Soon)");
+                } else if ("SUPER ADMIN".equalsIgnoreCase(user.getRole())) {
+                    System.out.println("1. Register Employee");
+                    System.out.println("2. Register HR");
+                }
+
+                System.out.println("3. Logout");
+                System.out.print("Choose option: ");
+
+                String choice = sc.nextLine();
+
+                if ("EMPLOYEE".equalsIgnoreCase(user.getRole())) {
+
+                    switch (choice) {
+                        case "1":
+                            applyLeave(leaveService, sc, user);
+                            break;
+
+                        case "2":
+                            updateProfile(employeeService, sc, user);
+                            break;
+
+                        case "3":
+                            System.out.println("Logging out...\n");
+                            break;
+
+                        default:
+                            System.out.println("Invalid choice!");
+                    }
+
+                } else if ("HR".equalsIgnoreCase(user.getRole())) {
+
+                    switch (choice) {
+                        case "1":
+                            System.out.println("HR Approve Leave (TODO)");
+                            break;
+
+                        case "2":
+                            System.out.println("Manage Employees (TODO)");
+                            break;
+
+                        case "3":
+                            System.out.println("Logging out...\n");
+                            break;
+
+                        default:
+                            System.out.println("Invalid choice!");
+                    }
+
+                } else if ("SUPER ADMIN".equalsIgnoreCase(user.getRole())) {
+
+                    switch (choice) {
+                        case "1":
+                            registerUser(userService, sc, "EMPLOYEE");
+                            break;
+
+                        case "2":
+                            registerUser(userService, sc, "HR");
+                            break;
+
+                        case "3":
+                            System.out.println("Logging out...\n");
+                            break;
+
+                        default:
+                            System.out.println("Invalid choice!");
+                    }
+                }
+
+                if ("3".equals(choice)) {
+                    break;
+                }
             }
         }
     }
@@ -88,7 +188,7 @@ public class HRMClient {
     // Feature 2: Apply Leave
     // ------------------------------------------------------------------
 
-    private static void applyLeave(LeaveService leaveService, Scanner sc) {
+    private static void applyLeave(LeaveService leaveService, Scanner sc, User user) {
         System.out.println("\n--- Apply for Leave ---");
 
         // Leave type
@@ -126,8 +226,7 @@ public class HRMClient {
 
         // Call the RMI service
         try {
-            System.out.print("Enter Employee ID: ");
-            String empId = sc.nextLine();
+            String empId = user.getEmpId();
             LeaveApplication result = leaveService.applyLeave(
                     empId, leaveType, startDate, endDate, reason);
 
@@ -150,12 +249,12 @@ public class HRMClient {
         }
     }
 
-    private static void updateProfile(EmployeeService service, Scanner sc) {
+    private static void updateProfile(EmployeeService service, Scanner sc, User user) {
 
         System.out.println("\n--- Update Profile ---");
 
-        System.out.print("Employee ID: ");
-        String empId = sc.nextLine();
+        String empId = user.getEmpId();
+        System.out.println("Employee ID: " + empId);
 
         System.out.print("First Name: ");
         String first = sc.nextLine();
@@ -176,8 +275,7 @@ public class HRMClient {
         String ecPhone = sc.nextLine();
 
         try {
-            hrm.common.model.EmployeeProfile profile =
-                    new hrm.common.model.EmployeeProfile();
+            EmployeeProfile profile = new EmployeeProfile();
 
             profile.setEmpId(empId);
             profile.setFirstName(first);
@@ -193,6 +291,76 @@ public class HRMClient {
 
         } catch (Exception e) {
             System.err.println("[Error] " + e.getMessage());
+        }
+    }
+
+    private static void registerUser(UserService service, Scanner sc, String role) {
+
+        System.out.println("\n--- Register " + role + " ---");
+
+        while (true) {
+
+            System.out.print("First Name: ");
+            String first = sc.nextLine();
+
+            System.out.print("Last Name: ");
+            String last = sc.nextLine();
+
+            System.out.print("Contact Number: ");
+            String contact = sc.nextLine();
+
+            System.out.print("Email: ");
+            String email = sc.nextLine();
+
+            System.out.print("Username: ");
+            String username = sc.nextLine();
+
+            System.out.print("Password: ");
+            String password = sc.nextLine();
+
+            LocalDate hireDateObj;
+            while (true) {
+                System.out.print("Hire Date (yyyy-MM-dd): ");
+                String hireDate = sc.nextLine();
+
+                try {
+                    hireDateObj = LocalDate.parse(hireDate);
+                    break;
+                } catch (Exception e) {
+                    System.out.println("[Warning] Invalid date format! Try again.");
+                }
+            }
+
+            try {
+                EmployeeProfile emp = new EmployeeProfile();
+                emp.setFirstName(first);
+                emp.setLastName(last);
+                emp.setContactNum(contact);
+                emp.setEmail(email);
+                emp.setHireDate(hireDateObj);
+
+                User user = new User();
+                user.setUsername(username);
+                user.setPassword(password);
+                user.setRole(role);
+
+                service.registerUser(emp, user);
+
+                System.out.println("\n[Success] " + role + " registered!\n");
+                return;
+
+            } catch (Exception e) {
+
+                String msg = e.getMessage();
+
+                if (msg != null && msg.toLowerCase().contains("username already exists")) {
+                    System.out.println("[Warning] Username already exists. Please try another.\n");
+                    continue;
+                }
+
+                System.out.println("[Error] Unexpected error: " + msg);
+                return;
+            }
         }
     }
 }
