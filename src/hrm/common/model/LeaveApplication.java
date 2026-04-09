@@ -20,6 +20,8 @@ public class LeaveApplication implements Serializable {
     private LocalDateTime appliedAt;
     private String approvedBy;
     private LocalDateTime approvedDate;
+    private String firstName;
+    private String lastName;
 
     public LeaveApplication() {}
 
@@ -67,11 +69,19 @@ public class LeaveApplication implements Serializable {
     public LocalDateTime getApprovedDate() { return approvedDate; }
     public void setApprovedDate(LocalDateTime approvedDate) { this.approvedDate = approvedDate; }
 
+    public String getFirstName() { return firstName; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
+
+    public String getLastName() { return lastName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
+
     @Override
     public String toString() {
         return String.format(
-                "ID: %s | Type: %s | From: %s To: %s | Days: %d | Applied: %s | Status: %s | Approved By: %s | Approved Date: %s",
+                "ID: %s | Name: %s %s | Type: %s | From: %s To: %s | Days: %d | Applied: %s | Status: %s | Approved By: %s | Approved Date: %s",
                 id,
+                firstName,
+                lastName,
                 leaveType,
                 startDate,
                 endDate,

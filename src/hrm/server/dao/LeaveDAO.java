@@ -58,10 +58,12 @@ public class LeaveDAO {
 
     public List<LeaveApplication> getApplicationsByEmployee(String empId) throws SQLException {
 
-        String sql = "SELECT la.*, lc.leave_type " +
+        String sql = "SELECT la.*, lc.leave_type, e.first_name, e.last_name " +
                 "FROM leave_application la " +
                 "JOIN leave_category lc ON la.leave_type_id = lc.leave_type_id " +
-                "WHERE la.emp_id = ? ORDER BY la.applied_at DESC";
+                "JOIN employee e ON la.emp_id = e.emp_id " +
+                "WHERE la.emp_id = ? " +
+                "ORDER BY la.applied_at DESC";
 
         List<LeaveApplication> list = new ArrayList<>();
 
@@ -99,6 +101,9 @@ public class LeaveDAO {
                     app.setApprovedDate(approvedDateTs.toLocalDateTime());
                 }
 
+                app.setFirstName(rs.getString("first_name"));
+                app.setLastName(rs.getString("last_name"));
+
                 list.add(app);
             }
         }
@@ -120,6 +125,66 @@ public class LeaveDAO {
             } else {
                 throw new SQLException("Invalid leave type: " + leaveType);
             }
+        }
+    }
+
+    public List<LeaveApplication> getPendingApplications() throws SQLException {
+
+        String sql = "SELECT la.*, lc.leave_type, e.first_name, e.last_name " +
+                "FROM leave_application la " +
+                "JOIN leave_category lc ON la.leave_type_id = lc.leave_type_id " +
+                "JOIN employee e ON la.emp_id = e.emp_id " +
+                "WHERE la.applied_status = 'PENDING' " +
+                "ORDER BY la.applied_at ASC";
+
+        List<LeaveApplication> list = new ArrayList<>();
+
+        try (PreparedStatement ps = DBConnection.getConnection().prepareStatement(sql)) {
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                LeaveApplication app = new LeaveApplication();
+
+                app.setId(rs.getString("apply_id"));
+                app.setEmployeeId(rs.getString("emp_id"));
+                app.setLeaveType(rs.getString("leave_type"));
+
+                app.setStartDate(rs.getTimestamp("start_datetime")
+                        .toLocalDateTime().toLocalDate());
+
+                app.setEndDate(rs.getTimestamp("end_datetime")
+                        .toLocalDateTime().toLocalDate());
+
+                app.setTotalDays(rs.getLong("duration"));
+                app.setStatus(rs.getString("applied_status"));
+
+                app.setAppliedAt(rs.getTimestamp("applied_at")
+                        .toLocalDateTime());
+                app.setFirstName(rs.getString("first_name"));
+                app.setLastName(rs.getString("last_name"));
+
+                list.add(app);
+            }
+        }
+
+        return list;
+    }
+
+    public void updateLeaveStatus(String applicationId, String status, String approvedBy)
+            throws SQLException {
+
+        String sql = "UPDATE leave_application " +
+                "SET applied_status = ?, approved_by = ?, approved_date = NOW() " +
+                "WHERE apply_id = ?";
+
+        try (PreparedStatement ps = DBConnection.getConnection().prepareStatement(sql)) {
+
+            ps.setString(1, status);
+            ps.setObject(2, java.util.UUID.fromString(approvedBy));
+            ps.setObject(3, java.util.UUID.fromString(applicationId));
+
+            ps.executeUpdate();
         }
     }
 }

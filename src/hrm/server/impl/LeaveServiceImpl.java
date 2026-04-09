@@ -63,4 +63,23 @@ public class LeaveServiceImpl extends UnicastRemoteObject implements LeaveServic
             throw new RemoteException("Failed to fetch leave applications: " + e.getMessage(), e);
         }
     }
+
+    @Override
+    public List<LeaveApplication> getPendingApplications() throws RemoteException {
+        try {
+            return leaveDAO.getPendingApplications();
+        } catch (Exception e) {
+            throw new RemoteException("Failed to fetch pending applications", e);
+        }
+    }
+
+    @Override
+    public void updateLeaveStatus(String applicationId, String status, String approvedBy)
+            throws RemoteException {
+        try {
+            leaveDAO.updateLeaveStatus(applicationId, status, approvedBy);
+        } catch (Exception e) {
+            throw new RemoteException("Failed to update leave status", e);
+        }
+    }
 }

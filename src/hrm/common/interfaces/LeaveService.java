@@ -14,4 +14,9 @@ public interface LeaveService extends Remote{
                                 String reason) throws RemoteException;
 
     List<LeaveApplication> getMyApplications(String employeeId) throws RemoteException;
+
+    void updateLeaveStatus(String applicationId, String status, String approvedBy)
+            throws RemoteException;
+
+    List<LeaveApplication> getPendingApplications() throws RemoteException;
 }

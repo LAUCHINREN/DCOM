@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Scanner;
+import java.util.List;
 
 public class HRMClient {
     private static final String SERVER_HOST = "localhost";//"localhost";  // change to server IP e.g. "192.168.1.102"
@@ -97,7 +98,7 @@ public class HRMClient {
                     System.out.println("2. Update Profile");
                     System.out.println("3. View My Leave Applications");
                 } else if ("HR".equalsIgnoreCase(user.getRole())) {
-                    System.out.println("1. Approve Leave (Coming Soon)");
+                    System.out.println("1. Approve Leave");
                     System.out.println("2. Manage Employees (Coming Soon)");
                     System.out.println("3. Register Employee");
                 } else if ("SUPER ADMIN".equalsIgnoreCase(user.getRole())) {
@@ -143,7 +144,7 @@ public class HRMClient {
 
                     switch (choice) {
                         case "1":
-                            System.out.println("HR Approve Leave (TODO)");
+                            approveLeave(leaveService, sc, user);
                             break;
 
                         case "2":
@@ -405,6 +406,64 @@ public class HRMClient {
             }
 
             System.out.println();
+
+        } catch (Exception e) {
+            System.err.println("[Error] " + e.getMessage());
+        }
+    }
+
+    private static void approveLeave(LeaveService service, Scanner sc, User user) {
+
+        System.out.println("\n--- Pending Leave Applications ---");
+
+        try {
+            List<LeaveApplication> list = service.getPendingApplications();
+
+            if (list.isEmpty()) {
+                System.out.println("No pending applications.\n");
+                return;
+            }
+
+            // Display list
+            for (int i = 0; i < list.size(); i++) {
+                System.out.println((i + 1) + ". " + list.get(i));
+            }
+
+            System.out.print("\nSelect application number (0 to cancel): ");
+            int choice = Integer.parseInt(sc.nextLine());
+
+            if (choice == 0) return;
+
+            if (choice < 1 || choice > list.size()) {
+                System.out.println("Invalid choice!");
+                return;
+            }
+
+            LeaveApplication selected = list.get(choice - 1);
+
+            System.out.println("\nSelected:");
+            System.out.println(selected);
+
+            System.out.print("Approve or Reject? (A/R): ");
+            String decision = sc.nextLine().trim().toUpperCase();
+
+            String status;
+            if ("A".equals(decision)) {
+                status = "APPROVED";
+            } else if ("R".equals(decision)) {
+                status = "REJECTED";
+            } else {
+                System.out.println("Invalid input.");
+                return;
+            }
+
+            service.updateLeaveStatus(
+                    selected.getId(),
+                    status,
+                    user.getUserId()
+            );
+
+            System.out.println("\n[Success] Leave " + status + "!\n");
 
         } catch (Exception e) {
             System.err.println("[Error] " + e.getMessage());
