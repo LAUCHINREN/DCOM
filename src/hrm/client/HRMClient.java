@@ -97,6 +97,7 @@ public class HRMClient {
                     System.out.println("1. Apply Leave");
                     System.out.println("2. Update Profile");
                     System.out.println("3. View My Leave Applications");
+                    System.out.println("4. Manage Family");
                 } else if ("HR".equalsIgnoreCase(user.getRole())) {
                     System.out.println("1. Approve Leave");
                     System.out.println("2. Manage Employees (Coming Soon)");
@@ -107,7 +108,7 @@ public class HRMClient {
                 }
 
                 if ("EMPLOYEE".equalsIgnoreCase(user.getRole())) {
-                    System.out.println("4. Logout");
+                    System.out.println("5. Logout");
                 } else if ("HR".equalsIgnoreCase(user.getRole())) {
                     System.out.println("4. Logout");
                 } else {
@@ -133,6 +134,10 @@ public class HRMClient {
                             break;
 
                         case "4":
+                            manageFamily(employeeService, sc, user);
+                            break;
+
+                        case "5":
                             System.out.println("Logging out...\n");
                             break;
 
@@ -183,7 +188,7 @@ public class HRMClient {
                 }
 
                 if (
-                        ("EMPLOYEE".equalsIgnoreCase(user.getRole()) && "4".equals(choice)) ||
+                        ("EMPLOYEE".equalsIgnoreCase(user.getRole()) && "5".equals(choice)) ||
                                 ("HR".equalsIgnoreCase(user.getRole()) && "4".equals(choice)) ||
                                 ("SUPER ADMIN".equalsIgnoreCase(user.getRole()) && "3".equals(choice))
                 ) {
@@ -483,6 +488,129 @@ public class HRMClient {
 
         } catch (Exception e) {
             System.err.println("[Error] " + e.getMessage());
+        }
+    }
+
+    private static void manageFamily(EmployeeService service, Scanner sc, User user) {
+
+        while (true) {
+            System.out.println("\n--- Family Management ---");
+            System.out.println("1. View Family");
+            System.out.println("2. Add Family Member");
+            System.out.println("3. Update Family Member");
+            System.out.println("4. Back");
+            System.out.print("Choose: ");
+
+            String choice = sc.nextLine();
+
+            switch (choice) {
+                case "1":
+                    viewFamily(service, user);
+                    break;
+                case "2":
+                    addFamily(service, sc, user);
+                    break;
+                case "3":
+                    updateFamily(service, sc, user);
+                    break;
+                case "4":
+                    return;
+                default:
+                    System.out.println("Invalid choice!");
+            }
+        }
+    }
+
+    private static void viewFamily(EmployeeService service, User user) {
+        try {
+            List<EmployeeProfile> list = service.getFamilyMembers(user.getEmpId());
+
+            if (list.isEmpty()) {
+                System.out.println("No family records.");
+                return;
+            }
+
+            for (EmployeeProfile f : list) {
+                System.out.println("----------------------------------");
+                System.out.println("Family ID : " + f.getFamId());
+                System.out.println("Name      : " + f.getFirstName() + " " + f.getFamilyLastName());
+                System.out.println("IC        : " + f.getIdentificationNum());
+                System.out.println("Contact   : " + f.getContactNum());
+                System.out.println("----------------------------------");
+            }
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private static void addFamily(EmployeeService service, Scanner sc, User user) {
+
+        System.out.print("First Name: ");
+        String first = sc.nextLine();
+
+        System.out.print("Last Name: ");
+        String last = sc.nextLine();
+
+        System.out.print("Contact: ");
+        String contact = sc.nextLine();
+
+        System.out.print("IC Number: ");
+        String ic = sc.nextLine();
+
+        if (first.isEmpty() || last.isEmpty() || contact.isEmpty()) {
+            System.out.println("Fields cannot be empty!");
+            return;
+        }
+
+        EmployeeProfile p = new EmployeeProfile();
+        p.setEmpId(user.getEmpId());
+        p.setFirstName(first);
+        p.setFamilyLastName(last);
+        p.setContactNum(contact);
+        p.setIdentificationNum(ic);
+
+        try {
+            service.addFamilyMember(p);
+            System.out.println("Added successfully!");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private static void updateFamily(EmployeeService service, Scanner sc, User user) {
+
+        viewFamily(service, user);
+
+        System.out.print("Enter Family ID to update: ");
+        String famId = sc.nextLine();
+
+        System.out.print("New First Name: ");
+        String first = sc.nextLine();
+
+        System.out.print("New Last Name: ");
+        String last = sc.nextLine();
+
+        System.out.print("New Contact: ");
+        String contact = sc.nextLine();
+
+        if (famId.isEmpty() || first.isEmpty() || last.isEmpty() || contact.isEmpty()) {
+            System.out.println("Fields cannot be empty!");
+            return;
+        }
+
+        EmployeeProfile p = new EmployeeProfile();
+        p.setFamId(famId);
+        p.setEmpId(user.getEmpId());
+        p.setFirstName(first);
+        p.setFamilyLastName(last);
+        p.setContactNum(contact);
+
+        try {
+            service.updateFamilyMember(p);
+            System.out.println("Updated successfully!");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
     }
 }

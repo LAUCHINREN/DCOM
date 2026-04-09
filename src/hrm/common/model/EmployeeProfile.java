@@ -20,6 +20,9 @@ public class EmployeeProfile implements Serializable {
     private String gender;
     private LocalDate dob;
 
+    private String famId;
+    private String familyLastName;
+
     public EmployeeProfile() {}
 
     public String getEmpId() { return empId; }
@@ -54,6 +57,12 @@ public class EmployeeProfile implements Serializable {
 
     public LocalDate getDob() { return dob; }
     public void setDob(LocalDate dob) { this.dob = dob; }
+
+    public String getFamId() { return famId; }
+    public void setFamId(String famId) { this.famId = famId; }
+
+    public String getFamilyLastName() { return familyLastName; }
+    public void setFamilyLastName(String familyLastName) { this.familyLastName = familyLastName; }
 
     public String getIdentificationNum() { return identificationNum; }
 
