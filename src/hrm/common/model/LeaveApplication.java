@@ -18,6 +18,8 @@ public class LeaveApplication implements Serializable {
     private String reason;
     private String status;       // "PENDING", "APPROVED", "REJECTED"
     private LocalDateTime appliedAt;
+    private String approvedBy;
+    private LocalDateTime approvedDate;
 
     public LeaveApplication() {}
 
@@ -59,9 +61,25 @@ public class LeaveApplication implements Serializable {
     public LocalDateTime getAppliedAt()                 { return appliedAt; }
     public void setAppliedAt(LocalDateTime appliedAt)   { this.appliedAt = appliedAt; }
 
+    public String getApprovedBy() { return approvedBy; }
+    public void setApprovedBy(String approvedBy) { this.approvedBy = approvedBy; }
+
+    public LocalDateTime getApprovedDate() { return approvedDate; }
+    public void setApprovedDate(LocalDateTime approvedDate) { this.approvedDate = approvedDate; }
+
     @Override
     public String toString() {
-        return String.format("[%s] %s | %s to %s (%d days) | %s | Status: %s",
-                id, leaveType, startDate, endDate, totalDays, reason, status);
+        return String.format(
+                "ID: %s | Type: %s | From: %s To: %s | Days: %d | Applied: %s | Status: %s | Approved By: %s | Approved Date: %s",
+                id,
+                leaveType,
+                startDate,
+                endDate,
+                totalDays,
+                appliedAt,
+                status,
+                approvedBy,
+                approvedDate
+        );
     }
 }

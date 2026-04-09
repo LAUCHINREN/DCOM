@@ -12,4 +12,6 @@ public interface LeaveService extends Remote{
     LeaveApplication applyLeave(String employeeId, String leaveType,
                                 LocalDate startDate, LocalDate endDate,
                                 String reason) throws RemoteException;
+
+    List<LeaveApplication> getMyApplications(String employeeId) throws RemoteException;
 }

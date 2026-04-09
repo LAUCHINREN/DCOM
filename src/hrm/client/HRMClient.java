@@ -95,6 +95,7 @@ public class HRMClient {
                 if ("EMPLOYEE".equalsIgnoreCase(user.getRole())) {
                     System.out.println("1. Apply Leave");
                     System.out.println("2. Update Profile");
+                    System.out.println("3. View My Leave Applications");
                 } else if ("HR".equalsIgnoreCase(user.getRole())) {
                     System.out.println("1. Approve Leave (Coming Soon)");
                     System.out.println("2. Manage Employees (Coming Soon)");
@@ -104,7 +105,9 @@ public class HRMClient {
                     System.out.println("2. Register HR");
                 }
 
-                if ("HR".equalsIgnoreCase(user.getRole())) {
+                if ("EMPLOYEE".equalsIgnoreCase(user.getRole())) {
+                    System.out.println("4. Logout");
+                } else if ("HR".equalsIgnoreCase(user.getRole())) {
                     System.out.println("4. Logout");
                 } else {
                     System.out.println("3. Logout");
@@ -125,6 +128,10 @@ public class HRMClient {
                             break;
 
                         case "3":
+                            viewMyLeaves(leaveService, user);
+                            break;
+
+                        case "4":
                             System.out.println("Logging out...\n");
                             break;
 
@@ -145,6 +152,7 @@ public class HRMClient {
 
                         case "3":
                             registerUser(userService, sc, "EMPLOYEE");
+                            break;
 
                         case "4":
                             System.out.println("Logging out...\n");
@@ -174,7 +182,7 @@ public class HRMClient {
                 }
 
                 if (
-                        ("EMPLOYEE".equalsIgnoreCase(user.getRole()) && "3".equals(choice)) ||
+                        ("EMPLOYEE".equalsIgnoreCase(user.getRole()) && "4".equals(choice)) ||
                                 ("HR".equalsIgnoreCase(user.getRole()) && "4".equals(choice)) ||
                                 ("SUPER ADMIN".equalsIgnoreCase(user.getRole()) && "3".equals(choice))
                 ) {
@@ -376,6 +384,30 @@ public class HRMClient {
                 System.out.println("[Error] Unexpected error: " + msg);
                 return;
             }
+        }
+    }
+
+    private static void viewMyLeaves(LeaveService service, User user) {
+
+        System.out.println("\n--- My Leave Applications ---");
+
+        try {
+            java.util.List<LeaveApplication> list =
+                    service.getMyApplications(user.getEmpId());
+
+            if (list.isEmpty()) {
+                System.out.println("No leave applications found.\n");
+                return;
+            }
+
+            for (LeaveApplication app : list) {
+                System.out.println(app); // uses toString()
+            }
+
+            System.out.println();
+
+        } catch (Exception e) {
+            System.err.println("[Error] " + e.getMessage());
         }
     }
 }
