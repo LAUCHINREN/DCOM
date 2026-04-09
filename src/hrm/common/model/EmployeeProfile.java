@@ -11,6 +11,7 @@ public class EmployeeProfile implements Serializable {
     private String contactNum;
     private String email;
     private LocalDate hireDate;
+    private String identificationNum;
 
     // Emergency contact (from employee_family)
     private String emergencyName;
@@ -45,4 +46,10 @@ public class EmployeeProfile implements Serializable {
 
     public String getRelationship() { return relationship; }
     public void setRelationship(String relationship) { this.relationship = relationship; }
+
+    public String getIdentificationNum() { return identificationNum; }
+
+    public void setIdentificationNum(String identificationNum) {
+        this.identificationNum = identificationNum;
+    }
 }

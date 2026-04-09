@@ -39,17 +39,20 @@ public class UserDAO {
             String empSql = """
                 INSERT INTO employee (
                     first_name, last_name,
+                    identification_num,
                     contact_num, email, hire_date, employment_status
-                ) VALUES (?, ?, ?, ?, ?, 'ACTIVE')
+                )
+                VALUES (?, ?, ?, ?, ?, ?, 'ACTIVE')
                 RETURNING emp_id
             """;
 
             try (PreparedStatement ps = conn.prepareStatement(empSql)) {
                 ps.setString(1, emp.getFirstName());
                 ps.setString(2, emp.getLastName());
-                ps.setString(3, emp.getContactNum());
-                ps.setString(4, emp.getEmail());
-                ps.setDate(5, java.sql.Date.valueOf(emp.getHireDate()));
+                ps.setString(3, emp.getIdentificationNum());
+                ps.setString(4, emp.getContactNum());
+                ps.setString(5, emp.getEmail());
+                ps.setDate(6, java.sql.Date.valueOf(emp.getHireDate()));
 
                 ResultSet rs = ps.executeQuery();
                 rs.next();

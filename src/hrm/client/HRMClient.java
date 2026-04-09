@@ -98,12 +98,17 @@ public class HRMClient {
                 } else if ("HR".equalsIgnoreCase(user.getRole())) {
                     System.out.println("1. Approve Leave (Coming Soon)");
                     System.out.println("2. Manage Employees (Coming Soon)");
+                    System.out.println("3. Register Employee");
                 } else if ("SUPER ADMIN".equalsIgnoreCase(user.getRole())) {
                     System.out.println("1. Register Employee");
                     System.out.println("2. Register HR");
                 }
 
-                System.out.println("3. Logout");
+                if ("HR".equalsIgnoreCase(user.getRole())) {
+                    System.out.println("4. Logout");
+                } else {
+                    System.out.println("3. Logout");
+                }
                 System.out.print("Choose option: ");
 
                 String choice = sc.nextLine();
@@ -139,13 +144,15 @@ public class HRMClient {
                             break;
 
                         case "3":
+                            registerUser(userService, sc, "EMPLOYEE");
+
+                        case "4":
                             System.out.println("Logging out...\n");
                             break;
 
                         default:
                             System.out.println("Invalid choice!");
                     }
-
                 } else if ("SUPER ADMIN".equalsIgnoreCase(user.getRole())) {
 
                     switch (choice) {
@@ -166,7 +173,11 @@ public class HRMClient {
                     }
                 }
 
-                if ("3".equals(choice)) {
+                if (
+                        ("EMPLOYEE".equalsIgnoreCase(user.getRole()) && "3".equals(choice)) ||
+                                ("HR".equalsIgnoreCase(user.getRole()) && "4".equals(choice)) ||
+                                ("SUPER ADMIN".equalsIgnoreCase(user.getRole()) && "3".equals(choice))
+                ) {
                     break;
                 }
             }
@@ -312,6 +323,9 @@ public class HRMClient {
             System.out.print("Email: ");
             String email = sc.nextLine();
 
+            System.out.print("Identification Number: ");
+            String ic = sc.nextLine();
+
             System.out.print("Username: ");
             String username = sc.nextLine();
 
@@ -338,6 +352,7 @@ public class HRMClient {
                 emp.setContactNum(contact);
                 emp.setEmail(email);
                 emp.setHireDate(hireDateObj);
+                emp.setIdentificationNum(ic);
 
                 User user = new User();
                 user.setUsername(username);
