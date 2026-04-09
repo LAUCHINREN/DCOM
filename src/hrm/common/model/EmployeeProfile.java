@@ -1,6 +1,7 @@
 package hrm.common.model;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 
 public class EmployeeProfile implements Serializable {
 
@@ -9,6 +10,7 @@ public class EmployeeProfile implements Serializable {
     private String lastName;
     private String contactNum;
     private String email;
+    private LocalDate hireDate;
 
     // Emergency contact (from employee_family)
     private String emergencyName;
@@ -37,6 +39,9 @@ public class EmployeeProfile implements Serializable {
 
     public String getEmergencyContact() { return emergencyContact; }
     public void setEmergencyContact(String emergencyContact) { this.emergencyContact = emergencyContact; }
+
+    public LocalDate getHireDate() { return hireDate; }
+    public void setHireDate(LocalDate hireDate) { this.hireDate = hireDate; }
 
     public String getRelationship() { return relationship; }
     public void setRelationship(String relationship) { this.relationship = relationship; }

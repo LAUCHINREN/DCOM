@@ -5,6 +5,7 @@ import hrm.common.model.User;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.UUID;
 
 public class UserDAO {
@@ -16,38 +17,59 @@ public class UserDAO {
         try {
             conn.setAutoCommit(false);
 
-            UUID empId = UUID.randomUUID();
+            // =========================
+            // CHECK DUPLICATE USERNAME
+            // =========================
+            String checkSql = "SELECT COUNT(*) FROM \"user\" WHERE username = ?";
 
-            // INSERT EMPLOYEE
+            try (PreparedStatement ps = conn.prepareStatement(checkSql)) {
+                ps.setString(1, user.getUsername());
+                ResultSet rs = ps.executeQuery();
+
+                if (rs.next() && rs.getInt(1) > 0) {
+                    throw new Exception("Username already exists!");
+                }
+            }
+
+            UUID empId;
+
+            // =========================
+            // INSERT EMPLOYEE (AUTO ID)
+            // =========================
             String empSql = """
                 INSERT INTO employee (
-                    emp_id, first_name, last_name,
-                    contact_num, email, employment_status
+                    first_name, last_name,
+                    contact_num, email, hire_date, employment_status
                 ) VALUES (?, ?, ?, ?, ?, 'ACTIVE')
+                RETURNING emp_id
             """;
 
             try (PreparedStatement ps = conn.prepareStatement(empSql)) {
-                ps.setObject(1, empId);
-                ps.setString(2, emp.getFirstName());
-                ps.setString(3, emp.getLastName());
-                ps.setString(4, emp.getContactNum());
-                ps.setString(5, emp.getEmail());
-                ps.executeUpdate();
+                ps.setString(1, emp.getFirstName());
+                ps.setString(2, emp.getLastName());
+                ps.setString(3, emp.getContactNum());
+                ps.setString(4, emp.getEmail());
+                ps.setDate(5, java.sql.Date.valueOf(emp.getHireDate()));
+
+                ResultSet rs = ps.executeQuery();
+                rs.next();
+                empId = (UUID) rs.getObject("emp_id");
             }
 
-            // INSERT USER
+            // =========================
+            // INSERT USER (AUTO user_id)
+            // =========================
             String userSql = """
                 INSERT INTO "user" (
-                    user_id, emp_id, username, password, role, status
-                ) VALUES (?, ?, ?, ?, ?, 'ACTIVE')
+                    emp_id, username, password, role, status, created_at
+                ) VALUES (?, ?, ?, ?, 'ACTIVE', NOW())
             """;
 
             try (PreparedStatement ps = conn.prepareStatement(userSql)) {
-                ps.setObject(1, UUID.randomUUID());
-                ps.setObject(2, empId);
-                ps.setString(3, user.getUsername());
-                ps.setString(4, user.getPassword());
-                ps.setString(5, user.getRole());
+                ps.setObject(1, empId);
+                ps.setString(2, user.getUsername());
+                ps.setString(3, user.getPassword());
+                ps.setString(4, user.getRole());
                 ps.executeUpdate();
             }
 
@@ -55,6 +77,12 @@ public class UserDAO {
 
         } catch (Exception e) {
             conn.rollback();
+
+            if (e.getMessage() != null &&
+                    e.getMessage().toLowerCase().contains("duplicate")) {
+                throw new Exception("Username already exists!");
+            }
+
             throw e;
         }
     }
