@@ -1,6 +1,7 @@
 package hrm.server.dao;
 
 import hrm.common.model.LeaveApplication;
+import hrm.common.model.LeaveBalance;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -186,5 +187,102 @@ public class LeaveDAO {
 
             ps.executeUpdate();
         }
+    }
+
+    public List<LeaveBalance> getLeaveBalance(String empId) throws SQLException {
+
+        String sql = "SELECT lb.*, lc.leave_type " +
+                "FROM leave_balance lb " +
+                "JOIN leave_category lc ON lb.leave_type_id = lc.leave_type_id " +
+                "WHERE lb.emp_id = ? AND lb.year = EXTRACT(YEAR FROM CURRENT_DATE)";
+
+        List<LeaveBalance> list = new ArrayList<>();
+
+        try (PreparedStatement ps = DBConnection.getConnection().prepareStatement(sql)) {
+
+            ps.setObject(1, java.util.UUID.fromString(empId));
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                LeaveBalance lb = new LeaveBalance();
+
+                lb.setLeaveId(rs.getString("leave_id"));
+                lb.setEmpId(rs.getString("emp_id"));
+                lb.setLeaveType(rs.getString("leave_type"));
+                lb.setYear(rs.getInt("year"));
+                lb.setTotalQuota(rs.getBigDecimal("total_quota"));
+                lb.setApplied(rs.getBigDecimal("applied"));
+                lb.setBalance(rs.getBigDecimal("balance"));
+                lb.setCarryForward(rs.getBigDecimal("carry_forward"));
+
+                list.add(lb);
+            }
+        }
+
+        return list;
+    }
+
+    public void deductLeaveBalance(String empId, String leaveType, long days) throws SQLException {
+
+        String sql = "UPDATE leave_balance lb " +
+                "SET applied = applied + ?, " +
+                "balance = total_quota - (applied + ?) " +
+                "FROM leave_category lc " +
+                "WHERE lb.leave_type_id = lc.leave_type_id " +
+                "AND lc.leave_type = ? " +
+                "AND lb.emp_id = ? " +
+                "AND lb.year = EXTRACT(YEAR FROM CURRENT_DATE)";
+
+        try (PreparedStatement ps = DBConnection.getConnection().prepareStatement(sql)) {
+            ps.setBigDecimal(1, new java.math.BigDecimal(days));
+            ps.setBigDecimal(2, new java.math.BigDecimal(days));
+            ps.setString(3, leaveType);
+            ps.setObject(4, java.util.UUID.fromString(empId));
+
+            ps.executeUpdate();
+        }
+    }
+
+    public void initializeLeaveBalance(String empId) throws SQLException {
+
+        String sql = "INSERT INTO leave_balance " +
+                "(leave_id, emp_id, leave_type_id, year, total_quota, applied, balance, carry_forward) " +
+                "SELECT gen_random_uuid(), ?, lc.leave_type_id, EXTRACT(YEAR FROM CURRENT_DATE), " +
+                "lc.annual_quota, 0, lc.annual_quota, 0 " +
+                "FROM leave_category lc";
+
+        try (PreparedStatement ps = DBConnection.getConnection().prepareStatement(sql)) {
+
+            ps.setObject(1, java.util.UUID.fromString(empId));
+            ps.executeUpdate();
+        }
+    }
+
+    public LeaveApplication getApplicationById(String applicationId) throws SQLException {
+
+        String sql = "SELECT la.*, lc.leave_type " +
+                "FROM leave_application la " +
+                "JOIN leave_category lc ON la.leave_type_id = lc.leave_type_id " +
+                "WHERE la.apply_id = ?";
+
+        try (PreparedStatement ps = DBConnection.getConnection().prepareStatement(sql)) {
+
+            ps.setObject(1, java.util.UUID.fromString(applicationId));
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                LeaveApplication app = new LeaveApplication();
+
+                app.setId(rs.getString("apply_id"));
+                app.setEmployeeId(rs.getString("emp_id"));
+                app.setLeaveType(rs.getString("leave_type"));
+                app.setTotalDays(rs.getLong("duration"));
+                app.setStatus(rs.getString("applied_status"));
+
+                return app;
+            }
+        }
+
+        return null;
     }
 }

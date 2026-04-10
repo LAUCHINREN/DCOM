@@ -7,6 +7,7 @@ import hrm.common.interfaces.LoginService;
 import hrm.common.model.User;
 import hrm.common.interfaces.UserService;
 import hrm.common.model.EmployeeProfile;
+import hrm.common.model.LeaveBalance;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -97,7 +98,8 @@ public class HRMClient {
                     System.out.println("1. Apply Leave");
                     System.out.println("2. Update Profile");
                     System.out.println("3. View My Leave Applications");
-                    System.out.println("4. Manage Family");
+                    System.out.println("4. View Leave Balance");
+                    System.out.println("5. Manage Family");
                 } else if ("HR".equalsIgnoreCase(user.getRole())) {
                     System.out.println("1. Approve Leave");
                     System.out.println("2. Manage Employees (Coming Soon)");
@@ -108,7 +110,7 @@ public class HRMClient {
                 }
 
                 if ("EMPLOYEE".equalsIgnoreCase(user.getRole())) {
-                    System.out.println("5. Logout");
+                    System.out.println("6. Logout");
                 } else if ("HR".equalsIgnoreCase(user.getRole())) {
                     System.out.println("4. Logout");
                 } else {
@@ -134,10 +136,14 @@ public class HRMClient {
                             break;
 
                         case "4":
-                            manageFamily(employeeService, sc, user);
+                            viewLeaveBalance(leaveService, user);
                             break;
 
                         case "5":
+                            manageFamily(employeeService, sc, user);
+                            break;
+
+                        case "6":
                             System.out.println("Logging out...\n");
                             break;
 
@@ -188,7 +194,7 @@ public class HRMClient {
                 }
 
                 if (
-                        ("EMPLOYEE".equalsIgnoreCase(user.getRole()) && "5".equals(choice)) ||
+                        ("EMPLOYEE".equalsIgnoreCase(user.getRole()) && "6".equals(choice)) ||
                                 ("HR".equalsIgnoreCase(user.getRole()) && "4".equals(choice)) ||
                                 ("SUPER ADMIN".equalsIgnoreCase(user.getRole()) && "3".equals(choice))
                 ) {
@@ -611,6 +617,32 @@ public class HRMClient {
             System.out.println("Updated successfully!");
         } catch (Exception e) {
             System.out.println(e.getMessage());
+        }
+    }
+
+    private static void viewLeaveBalance(LeaveService service, User user) {
+
+        System.out.println("\n--- My Leave Balance ---");
+
+        try {
+            List<LeaveBalance> list = service.getLeaveBalance(user.getEmpId());
+
+            if (list.isEmpty()) {
+                System.out.println("No leave balance found.\n");
+                return;
+            }
+
+            for (LeaveBalance lb : list) {
+                System.out.println("----------------------------------");
+                System.out.println("Type    : " + lb.getLeaveType());
+                System.out.println("Quota   : " + lb.getTotalQuota());
+                System.out.println("Applied : " + lb.getApplied());
+                System.out.println("Balance : " + lb.getBalance());
+                System.out.println("----------------------------------");
+            }
+
+        } catch (Exception e) {
+            System.err.println("[Error] " + e.getMessage());
         }
     }
 }

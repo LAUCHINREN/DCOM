@@ -2,6 +2,7 @@ package hrm.common.interfaces;
 
 import hrm.common.model.LeaveApplication;
 import hrm.common.model.EmployeeProfile;
+import hrm.common.model.LeaveBalance;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -19,4 +20,7 @@ public interface LeaveService extends Remote{
             throws RemoteException;
 
     List<LeaveApplication> getPendingApplications() throws RemoteException;
+
+    List<LeaveBalance> getLeaveBalance(String empId) throws RemoteException;
+    
 }

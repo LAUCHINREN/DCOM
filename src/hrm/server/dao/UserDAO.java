@@ -76,6 +76,22 @@ public class UserDAO {
                 ps.executeUpdate();
             }
 
+            String leaveSql = """
+                INSERT INTO leave_balance (
+                    leave_id, emp_id, leave_type_id, year,
+                    total_quota, applied, balance, carry_forward
+                )
+                SELECT gen_random_uuid(), ?, lc.leave_type_id,
+                       EXTRACT(YEAR FROM CURRENT_DATE),
+                       lc.annual_quota, 0, lc.annual_quota, 0
+                FROM leave_category lc
+            """;
+
+            try (PreparedStatement ps = conn.prepareStatement(leaveSql)) {
+                ps.setObject(1, empId);
+                ps.executeUpdate();
+            }
+
             conn.commit();
 
         } catch (Exception e) {

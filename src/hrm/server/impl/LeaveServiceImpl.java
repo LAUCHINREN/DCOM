@@ -3,6 +3,7 @@ package hrm.server.impl;
 import hrm.common.interfaces.LeaveService;
 import hrm.common.model.LeaveApplication;
 import hrm.server.dao.LeaveDAO;
+import hrm.common.model.LeaveBalance;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -27,30 +28,47 @@ public class LeaveServiceImpl extends UnicastRemoteObject implements LeaveServic
         try {
             System.out.println("[DEBUG] applyLeave() entered");
 
-            // Validation 1
-            System.out.println("[DEBUG] Checking dates...");
             if (startDate == null || endDate == null) {
                 throw new RemoteException("Start date and end date are required.");
             }
 
-            // Insert
-            System.out.println("[DEBUG] About to call insertApplication...");
+            if (endDate.isBefore(startDate)) {
+                throw new RemoteException("End date cannot be before start date!");
+            }
+
+            List<LeaveBalance> balances = leaveDAO.getLeaveBalance(employeeId);
+
+            long requestedDays = ChronoUnit.DAYS.between(startDate, endDate) + 1;
+
+            boolean valid = false;
+
+            for (LeaveBalance lb : balances) {
+                if (lb.getLeaveType().equalsIgnoreCase(leaveType)) {
+
+                    if (lb.getBalance().intValue() < requestedDays) {
+                        throw new RemoteException("Insufficient leave balance!");
+                    }
+
+                    valid = true;
+                    break;
+                }
+            }
+
+            if (!valid) {
+                throw new RemoteException("Invalid leave type!");
+            }
+
             LeaveApplication app = new LeaveApplication(
                     employeeId, leaveType.toUpperCase(), startDate, endDate, reason);
-            //app.setTotalDays(totalDays);
 
             LeaveApplication saved = leaveDAO.insertApplication(app);
-            System.out.println("[DEBUG] insertApplication returned: " + saved);
-
-            //leaveDAO.deductLeaveBalance(employeeId, leaveType, totalDays);
-            System.out.println("[DEBUG] Balance deducted");
 
             return saved;
 
         } catch (RemoteException re) {
             throw re;
         } catch (Exception e) {
-            e.printStackTrace();  // full stack trace
+            e.printStackTrace();
             throw new RemoteException("Server error while applying leave: " + e.getMessage(), e);
         }
     }
@@ -77,9 +95,33 @@ public class LeaveServiceImpl extends UnicastRemoteObject implements LeaveServic
     public void updateLeaveStatus(String applicationId, String status, String approvedBy)
             throws RemoteException {
         try {
+
+            LeaveApplication app = leaveDAO.getApplicationById(applicationId);
+
             leaveDAO.updateLeaveStatus(applicationId, status, approvedBy);
+
+            if ("APPROVED".equalsIgnoreCase(status) &&
+                    app != null &&
+                    !"APPROVED".equalsIgnoreCase(app.getStatus())) {
+
+                leaveDAO.deductLeaveBalance(
+                        app.getEmployeeId(),
+                        app.getLeaveType(),
+                        app.getTotalDays()
+                );
+            }
+
         } catch (Exception e) {
             throw new RemoteException("Failed to update leave status", e);
+        }
+    }
+
+    @Override
+    public List<LeaveBalance> getLeaveBalance(String empId) throws RemoteException {
+        try {
+            return leaveDAO.getLeaveBalance(empId);
+        } catch (Exception e) {
+            throw new RemoteException("Failed to fetch leave balance", e);
         }
     }
 }
