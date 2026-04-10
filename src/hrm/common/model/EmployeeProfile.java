@@ -1,6 +1,7 @@
 package hrm.common.model;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 
 public class EmployeeProfile implements Serializable {
 
@@ -9,11 +10,18 @@ public class EmployeeProfile implements Serializable {
     private String lastName;
     private String contactNum;
     private String email;
+    private LocalDate hireDate;
+    private String identificationNum;
 
     // Emergency contact (from employee_family)
     private String emergencyName;
     private String emergencyContact;
     private String relationship;
+    private String gender;
+    private LocalDate dob;
+
+    private String famId;
+    private String familyLastName;
 
     public EmployeeProfile() {}
 
@@ -38,6 +46,27 @@ public class EmployeeProfile implements Serializable {
     public String getEmergencyContact() { return emergencyContact; }
     public void setEmergencyContact(String emergencyContact) { this.emergencyContact = emergencyContact; }
 
+    public LocalDate getHireDate() { return hireDate; }
+    public void setHireDate(LocalDate hireDate) { this.hireDate = hireDate; }
+
     public String getRelationship() { return relationship; }
     public void setRelationship(String relationship) { this.relationship = relationship; }
+
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
+
+    public LocalDate getDob() { return dob; }
+    public void setDob(LocalDate dob) { this.dob = dob; }
+
+    public String getFamId() { return famId; }
+    public void setFamId(String famId) { this.famId = famId; }
+
+    public String getFamilyLastName() { return familyLastName; }
+    public void setFamilyLastName(String familyLastName) { this.familyLastName = familyLastName; }
+
+    public String getIdentificationNum() { return identificationNum; }
+
+    public void setIdentificationNum(String identificationNum) {
+        this.identificationNum = identificationNum;
+    }
 }

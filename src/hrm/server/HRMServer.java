@@ -3,6 +3,10 @@ package hrm.server;
 import hrm.server.dao.DBConnection;
 import hrm.server.impl.LeaveServiceImpl;
 import hrm.server.impl.EmployeeServiceImpl;
+import hrm.common.interfaces.LoginService;
+import hrm.server.impl.LoginServiceImpl;
+import hrm.common.interfaces.UserService;
+import hrm.server.impl.UserServiceImpl;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -46,9 +50,9 @@ public class HRMServer {
             registry.rebind("LoginService", loginService);
             System.out.println("[Server] LoginService ready.");
 
-            // Register more services here as you build them:
-            // HRMServiceImpl hrmService = new HRMServiceImpl();
-            // registry.rebind("HRMService", hrmService);
+            UserService userService = new UserServiceImpl();
+            registry.rebind("UserService", userService);
+            System.out.println("[Server] UserService ready.");
 
             System.out.println("=================================================");
             System.out.println("  HRM Server is ready. Waiting for clients...");

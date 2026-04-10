@@ -30,6 +30,8 @@ public class LoginServiceImpl extends UnicastRemoteObject implements LoginServic
 
             if (rs.next()) {
                 User user = new User();
+                user.setUserId(rs.getString("user_id"));
+                user.setEmpId(rs.getString("emp_id"));
                 user.setUsername(rs.getString("username"));
                 user.setRole(rs.getString("role"));
                 user.setStatus(rs.getString("status"));
