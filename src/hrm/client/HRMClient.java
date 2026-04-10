@@ -166,34 +166,44 @@ public class HRMClient {
                                 System.out.print("Enter Year: ");
                                 int year = Integer.parseInt(sc.nextLine());
 
-                                List<LeaveBalance> list = leaveService.getLeaveBalanceByYear(empId, year);
+                                System.out.println("Exporting report in background...\n");
 
-                                if (list.isEmpty()) {
-                                    System.out.println("No data found.\n");
-                                    break;
-                                }
+                                new Thread(() -> {
+                                    try {
+                                        List<LeaveBalance> list =
+                                                leaveService.getLeaveBalanceByYear(empId, year);
 
-                                String fileName = "leave_balance_" + empId + "_" + year + ".csv";
+                                        if (list.isEmpty()) {
+                                            System.out.println("[Thread] No data found.\n");
+                                            return;
+                                        }
 
-                                java.io.FileWriter writer = new java.io.FileWriter(fileName);
+                                        String fileName = "leave_balance_" + empId + "_" + year + ".csv";
 
-                                writer.append("Leave ID,Employee ID,Year,Leave Type,Total Quota,Applied,Balance,Carry Forward\n");
+                                        java.io.FileWriter writer = new java.io.FileWriter(fileName);
 
-                                for (LeaveBalance lb : list) {
-                                    writer.append(lb.getLeaveId()).append(",");
-                                    writer.append(lb.getEmpId()).append(",");
-                                    writer.append(String.valueOf(lb.getYear())).append(",");
-                                    writer.append(lb.getLeaveType()).append(",");
-                                    writer.append(lb.getTotalQuota().toString()).append(",");
-                                    writer.append(lb.getApplied().toString()).append(",");
-                                    writer.append(lb.getBalance().toString()).append(",");
-                                    writer.append(lb.getCarryForward().toString()).append("\n");
-                                }
+                                        writer.append("Leave ID,Employee ID,Year,Leave Type,Total Quota,Applied,Balance,Carry Forward\n");
 
-                                writer.flush();
-                                writer.close();
+                                        for (LeaveBalance lb : list) {
+                                            writer.append(lb.getLeaveId()).append(",");
+                                            writer.append(lb.getEmpId()).append(",");
+                                            writer.append(String.valueOf(lb.getYear())).append(",");
+                                            writer.append(lb.getLeaveType()).append(",");
+                                            writer.append(lb.getTotalQuota().toString()).append(",");
+                                            writer.append(lb.getApplied().toString()).append(",");
+                                            writer.append(lb.getBalance().toString()).append(",");
+                                            writer.append(lb.getCarryForward().toString()).append("\n");
+                                        }
 
-                                System.out.println("FULL CSV saved: " + fileName + "\n");
+                                        writer.flush();
+                                        writer.close();
+
+                                        System.out.println("[Thread] CSV Export Completed: " + fileName + "\n");
+
+                                    } catch (Exception e) {
+                                        System.out.println("[Thread Error] " + e.getMessage());
+                                    }
+                                }).start();
 
                             } catch (Exception e) {
                                 System.out.println("[Error] " + e.getMessage());
