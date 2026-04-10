@@ -83,7 +83,7 @@ public class UserDAO {
                 )
                 SELECT gen_random_uuid(), ?, lc.leave_type_id,
                        EXTRACT(YEAR FROM CURRENT_DATE),
-                       lc.annual_quota, 0, lc.annual_quota, 0
+                       lc.annual_quota, 0, lc.annual_quota, lc.annual_quota
                 FROM leave_category lc
             """;
 

@@ -124,4 +124,13 @@ public class LeaveServiceImpl extends UnicastRemoteObject implements LeaveServic
             throw new RemoteException("Failed to fetch leave balance", e);
         }
     }
+
+    @Override
+    public List<LeaveBalance> getLeaveBalanceByYear(String empId, int year) throws RemoteException {
+        try {
+            return leaveDAO.getLeaveBalanceByYear(empId, year);
+        } catch (Exception e) {
+            throw new RemoteException("Failed to fetch leave balance", e);
+        }
+    }
 }

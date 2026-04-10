@@ -2,6 +2,8 @@ package hrm.server.dao;
 
 import hrm.common.model.LeaveApplication;
 import hrm.common.model.LeaveBalance;
+import java.math.BigDecimal;
+import java.util.UUID;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -226,7 +228,8 @@ public class LeaveDAO {
 
         String sql = "UPDATE leave_balance lb " +
                 "SET applied = applied + ?, " +
-                "balance = total_quota - (applied + ?) " +
+                "balance = total_quota - (applied + ?), " +
+                "carry_forward = total_quota - (applied + ?) " +
                 "FROM leave_category lc " +
                 "WHERE lb.leave_type_id = lc.leave_type_id " +
                 "AND lc.leave_type = ? " +
@@ -234,10 +237,11 @@ public class LeaveDAO {
                 "AND lb.year = EXTRACT(YEAR FROM CURRENT_DATE)";
 
         try (PreparedStatement ps = DBConnection.getConnection().prepareStatement(sql)) {
-            ps.setBigDecimal(1, new java.math.BigDecimal(days));
-            ps.setBigDecimal(2, new java.math.BigDecimal(days));
-            ps.setString(3, leaveType);
-            ps.setObject(4, java.util.UUID.fromString(empId));
+            ps.setBigDecimal(1, new BigDecimal(days));
+            ps.setBigDecimal(2, new BigDecimal(days));
+            ps.setBigDecimal(3, new BigDecimal(days));
+            ps.setString(4, leaveType);
+            ps.setObject(5, UUID.fromString(empId));
 
             ps.executeUpdate();
         }
@@ -248,7 +252,7 @@ public class LeaveDAO {
         String sql = "INSERT INTO leave_balance " +
                 "(leave_id, emp_id, leave_type_id, year, total_quota, applied, balance, carry_forward) " +
                 "SELECT gen_random_uuid(), ?, lc.leave_type_id, EXTRACT(YEAR FROM CURRENT_DATE), " +
-                "lc.annual_quota, 0, lc.annual_quota, 0 " +
+                "lc.annual_quota, 0, lc.annual_quota, lc.annual_quota " +
                 "FROM leave_category lc";
 
         try (PreparedStatement ps = DBConnection.getConnection().prepareStatement(sql)) {
@@ -284,5 +288,40 @@ public class LeaveDAO {
         }
 
         return null;
+    }
+
+    public List<LeaveBalance> getLeaveBalanceByYear(String empId, int year) throws SQLException {
+
+        String sql = "SELECT lb.*, lc.leave_type " +
+                "FROM leave_balance lb " +
+                "JOIN leave_category lc ON lb.leave_type_id = lc.leave_type_id " +
+                "WHERE lb.emp_id = ? AND lb.year = ?";
+
+        List<LeaveBalance> list = new ArrayList<>();
+
+        try (PreparedStatement ps = DBConnection.getConnection().prepareStatement(sql)) {
+
+            ps.setObject(1, java.util.UUID.fromString(empId));
+            ps.setInt(2, year);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                LeaveBalance lb = new LeaveBalance();
+
+                lb.setLeaveId(rs.getString("leave_id"));
+                lb.setEmpId(rs.getString("emp_id"));
+                lb.setLeaveType(rs.getString("leave_type"));
+                lb.setYear(rs.getInt("year"));
+                lb.setTotalQuota(rs.getBigDecimal("total_quota"));
+                lb.setApplied(rs.getBigDecimal("applied"));
+                lb.setBalance(rs.getBigDecimal("balance"));
+                lb.setCarryForward(rs.getBigDecimal("carry_forward"));
+
+                list.add(lb);
+            }
+        }
+
+        return list;
     }
 }

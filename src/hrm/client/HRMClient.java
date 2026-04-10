@@ -102,7 +102,7 @@ public class HRMClient {
                     System.out.println("5. Manage Family");
                 } else if ("HR".equalsIgnoreCase(user.getRole())) {
                     System.out.println("1. Approve Leave");
-                    System.out.println("2. Manage Employees (Coming Soon)");
+                    System.out.println("2. Export Yearly Leave Report (CSV)");
                     System.out.println("3. Register Employee");
                 } else if ("SUPER ADMIN".equalsIgnoreCase(user.getRole())) {
                     System.out.println("1. Register Employee");
@@ -159,7 +159,45 @@ public class HRMClient {
                             break;
 
                         case "2":
-                            System.out.println("Manage Employees (TODO)");
+                            try {
+                                System.out.print("Enter Employee ID: ");
+                                String empId = sc.nextLine();
+
+                                System.out.print("Enter Year: ");
+                                int year = Integer.parseInt(sc.nextLine());
+
+                                List<LeaveBalance> list = leaveService.getLeaveBalanceByYear(empId, year);
+
+                                if (list.isEmpty()) {
+                                    System.out.println("No data found.\n");
+                                    break;
+                                }
+
+                                String fileName = "leave_balance_" + empId + "_" + year + ".csv";
+
+                                java.io.FileWriter writer = new java.io.FileWriter(fileName);
+
+                                writer.append("Leave ID,Employee ID,Year,Leave Type,Total Quota,Applied,Balance,Carry Forward\n");
+
+                                for (LeaveBalance lb : list) {
+                                    writer.append(lb.getLeaveId()).append(",");
+                                    writer.append(lb.getEmpId()).append(",");
+                                    writer.append(String.valueOf(lb.getYear())).append(",");
+                                    writer.append(lb.getLeaveType()).append(",");
+                                    writer.append(lb.getTotalQuota().toString()).append(",");
+                                    writer.append(lb.getApplied().toString()).append(",");
+                                    writer.append(lb.getBalance().toString()).append(",");
+                                    writer.append(lb.getCarryForward().toString()).append("\n");
+                                }
+
+                                writer.flush();
+                                writer.close();
+
+                                System.out.println("FULL CSV saved: " + fileName + "\n");
+
+                            } catch (Exception e) {
+                                System.out.println("[Error] " + e.getMessage());
+                            }
                             break;
 
                         case "3":

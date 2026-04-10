@@ -22,5 +22,6 @@ public interface LeaveService extends Remote{
     List<LeaveApplication> getPendingApplications() throws RemoteException;
 
     List<LeaveBalance> getLeaveBalance(String empId) throws RemoteException;
-    
+
+    List<LeaveBalance> getLeaveBalanceByYear(String empId, int year) throws RemoteException;
 }
