@@ -24,6 +24,17 @@ public class HRMClient {
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public static void main(String[] args) {
+
+        // To show SSL/TLS is actually work
+        System.setProperty("javax.net.debug", "ssl,handshake");
+        System.out.println("[SECURITY] SSL/TLS enabled for client.");
+
+        System.setProperty(
+                "javax.net.ssl.trustStore",
+                "C:\\Users\\User\\Desktop\\APU\\year3\\sem1\\DCOM\\LeaveMgmtAsgmTest\\clienttruststore.jks"
+        );
+
+        System.setProperty("javax.net.ssl.trustStorePassword", "password");
         //region [console]
         Scanner sc = new Scanner(System.in);
         //endregion
@@ -40,7 +51,11 @@ public class HRMClient {
         UserService userService;
 
         try {
-            Registry registry = LocateRegistry.getRegistry(SERVER_HOST, RMI_PORT);
+            Registry registry = LocateRegistry.getRegistry(
+                    SERVER_HOST,
+                    RMI_PORT,
+                    new javax.rmi.ssl.SslRMIClientSocketFactory()
+            );
             leaveService = (LeaveService) registry.lookup("LeaveService");
             employeeService = (EmployeeService) registry.lookup("EmployeeService");
             loginService = (LoginService) registry.lookup("LoginService");

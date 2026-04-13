@@ -20,6 +20,13 @@ public class HRMServer {
         System.out.println("  HRM Server — Starting up...");
         System.out.println("=================================================");
 
+        // To show SSL/TLS is actually work
+        System.setProperty("javax.net.debug", "ssl,handshake");
+        System.out.println("[SECURITY] SSL/TLS enabled for server.");
+
+        System.setProperty("javax.net.ssl.keyStore", "serverkeystore.jks");
+        System.setProperty("javax.net.ssl.keyStorePassword", "password");
+
         // Step 1: Verify DB connection FIRST before doing anything else
         // If this fails, the server will not start — fail fast
         System.out.println("[Server] Connecting to database...");
@@ -35,7 +42,11 @@ public class HRMServer {
 
         // Step 2: Only reached if DB is healthy — now bind RMI services
         try {
-            Registry registry = LocateRegistry.createRegistry(RMI_PORT);
+            Registry registry = LocateRegistry.createRegistry(
+                    RMI_PORT,
+                    new javax.rmi.ssl.SslRMIClientSocketFactory(),
+                    new javax.rmi.ssl.SslRMIServerSocketFactory()
+            );
             System.out.println("[Server] RMI Registry started on port " + RMI_PORT);
 
             LeaveServiceImpl leaveService = new LeaveServiceImpl();
