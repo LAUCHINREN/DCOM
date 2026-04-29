@@ -82,6 +82,7 @@ public class EmployeeDAO {
                 p.setFamilyLastName(rs.getString("last_name"));
                 p.setIdentificationNum(rs.getString("identification_num"));
                 p.setContactNum(rs.getString("contact_num"));
+                p.setEmergencyContactStatus(rs.getBoolean("is_emergency_contact"));
 
                 list.add(p);
             }

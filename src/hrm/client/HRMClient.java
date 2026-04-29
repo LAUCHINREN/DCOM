@@ -611,10 +611,11 @@ public class HRMClient {
 
             for (EmployeeProfile f : list) {
                 System.out.println("----------------------------------");
-                System.out.println("Family ID : " + f.getFamId());
-                System.out.println("Name      : " + f.getFirstName() + " " + f.getFamilyLastName());
-                System.out.println("IC        : " + f.getIdentificationNum());
-                System.out.println("Contact   : " + f.getContactNum());
+                System.out.println("Family ID                   : " + f.getFamId());
+                System.out.println("Name                        : " + f.getFirstName() + " " + f.getFamilyLastName());
+                System.out.println("IC                          : " + f.getIdentificationNum());
+                System.out.println("Contact                     : " + f.getContactNum());
+                System.out.println("Emergency Contact Status    : " + (f.getEmergencyContactStatus() ? "Yes": "No"));
                 System.out.println("----------------------------------");
             }
 
