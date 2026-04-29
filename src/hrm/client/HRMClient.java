@@ -369,6 +369,9 @@ public class HRMClient {
         System.out.print("Contact Number: ");
         String contact = sc.nextLine();
 
+        System.out.print("IC: ");
+        String ic = sc.nextLine();
+
         System.out.print("Email: ");
         String email = sc.nextLine();
 
@@ -386,11 +389,11 @@ public class HRMClient {
             }
         }
 
-        System.out.print("Emergency Contact Name: ");
-        String ecName = sc.nextLine();
-
-        System.out.print("Emergency Contact Phone: ");
-        String ecPhone = sc.nextLine();
+        // System.out.print("Emergency Contact Name: ");
+        // String ecName = sc.nextLine();
+        //
+        // System.out.print("Emergency Contact Phone: ");
+        // String ecPhone = sc.nextLine();
 
         try {
             EmployeeProfile profile = new EmployeeProfile();
@@ -400,8 +403,9 @@ public class HRMClient {
             profile.setLastName(last);
             profile.setContactNum(contact);
             profile.setEmail(email);
-            profile.setEmergencyName(ecName);
-            profile.setEmergencyContact(ecPhone);
+            // profile.setEmergencyName(ecName);
+            // profile.setEmergencyContact(ecPhone);
+            profile.setIdentificationNum(ic);
             profile.setGender(gender);
             profile.setDob(dob);
 
