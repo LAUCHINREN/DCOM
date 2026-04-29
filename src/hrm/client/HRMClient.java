@@ -671,11 +671,23 @@ public class HRMClient {
         System.out.print("New Last Name: ");
         String last = sc.nextLine();
 
+        System.out.print("New IC: ");
+        String ic = sc.nextLine();
+
         System.out.print("New Contact: ");
         String contact = sc.nextLine();
 
-        if (famId.isEmpty() || first.isEmpty() || last.isEmpty() || contact.isEmpty()) {
+        System.out.print("Set Is Emergency Contact? (y/n): ");
+        String emergency_status_input = sc.nextLine().trim();
+
+        if (famId.isEmpty() || first.isEmpty() || last.isEmpty() || ic.isEmpty() || contact.isEmpty() || emergency_status_input.isEmpty()) {
             System.out.println("Fields cannot be empty!");
+            return;
+        }
+
+        // Check field [Is Emergency Contact] validity
+        if (!emergency_status_input.equalsIgnoreCase("y") && !emergency_status_input.equalsIgnoreCase("n")){
+            System.out.println("Field [Is Emergency Contact] is not valid!");
             return;
         }
 
@@ -684,7 +696,9 @@ public class HRMClient {
         p.setEmpId(user.getEmpId());
         p.setFirstName(first);
         p.setFamilyLastName(last);
+        p.setIdentificationNum(ic);
         p.setContactNum(contact);
+        p.setEmergencyContactStatus(emergency_status_input.equalsIgnoreCase("y"));
 
         try {
             service.updateFamilyMember(p);

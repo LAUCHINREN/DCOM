@@ -118,18 +118,29 @@ public class EmployeeDAO {
 
     public void updateFamilyMember(EmployeeProfile profile) throws Exception {
 
+        // String sql = "UPDATE employee_family \n" +
+        //         "SET first_name=?, last_name=?, contact_num=? \n" +
+        //         "WHERE fam_id=? AND emp_id=?";
         String sql = "UPDATE employee_family \n" +
-                "SET first_name=?, last_name=?, contact_num=? \n" +
+                "SET first_name=?, last_name=?, identification_num=?, contact_num=?, is_emergency_contact=? \n" +
                 "WHERE fam_id=? AND emp_id=?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
+            // ps.setString(1, profile.getFirstName());
+            // ps.setString(2, profile.getFamilyLastName());
+            // ps.setString(3, profile.getContactNum());
+            // ps.setObject(4, UUID.fromString(profile.getFamId()));
+            // ps.setObject(5, UUID.fromString(profile.getEmpId()));
+
             ps.setString(1, profile.getFirstName());
             ps.setString(2, profile.getFamilyLastName());
-            ps.setString(3, profile.getContactNum());
-            ps.setObject(4, UUID.fromString(profile.getFamId()));
-            ps.setObject(5, UUID.fromString(profile.getEmpId()));
+            ps.setString(3, profile.getIdentificationNum());
+            ps.setString(4, profile.getContactNum());
+            ps.setBoolean(5, profile.getEmergencyContactStatus());
+            ps.setObject(6, UUID.fromString(profile.getFamId()));
+            ps.setObject(7, UUID.fromString(profile.getEmpId()));
 
             int rows = ps.executeUpdate();
 
