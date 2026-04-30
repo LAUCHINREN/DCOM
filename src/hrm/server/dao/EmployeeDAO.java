@@ -14,16 +14,34 @@ public class EmployeeDAO {
     public EmployeeProfile updateEmployeeProfile(EmployeeProfile profile) throws Exception {
 
         Connection conn = DBConnection.getConnection();
-        String sql1 = "UPDATE employee SET first_name = ?, last_name = ?, contact_num = ?, email = ?, gender = ?, dob = ? WHERE emp_id = ?";
+        // String sql1 = "UPDATE employee SET first_name = ?, last_name = ?, contact_num = ?, email = ?, gender = ?, dob = ? WHERE emp_id = ?";
+        //
+        // try (PreparedStatement ps = conn.prepareStatement(sql1)) {
+        //     ps.setString(1, profile.getFirstName());
+        //     ps.setString(2, profile.getLastName());
+        //     ps.setString(3, profile.getContactNum());
+        //     ps.setString(4, profile.getEmail());
+        //     ps.setString(5, profile.getGender());
+        //     ps.setObject(6, profile.getDob());
+        //     ps.setObject(7, UUID.fromString(profile.getEmpId()));
+        //     int rows = ps.executeUpdate();
+        //
+        //     if (rows == 0) {
+        //         throw new Exception("Employee not found.");
+        //     }
+        // }
+
+        String sql1 = "UPDATE employee SET first_name = ?, last_name = ?, identification_num =?, contact_num = ?, email = ?, gender = ?, dob = ? WHERE emp_id = ?";
 
         try (PreparedStatement ps = conn.prepareStatement(sql1)) {
             ps.setString(1, profile.getFirstName());
             ps.setString(2, profile.getLastName());
-            ps.setString(3, profile.getContactNum());
-            ps.setString(4, profile.getEmail());
-            ps.setString(5, profile.getGender());
-            ps.setObject(6, profile.getDob());
-            ps.setObject(7, UUID.fromString(profile.getEmpId()));
+            ps.setString(3, profile.getIdentificationNum());
+            ps.setString(4, profile.getContactNum());
+            ps.setString(5, profile.getEmail());
+            ps.setString(6, profile.getGender());
+            ps.setObject(7, profile.getDob());
+            ps.setObject(8, UUID.fromString(profile.getEmpId()));
             int rows = ps.executeUpdate();
 
             if (rows == 0) {
@@ -31,34 +49,35 @@ public class EmployeeDAO {
             }
         }
 
-        String sql2 = "UPDATE employee_family SET first_name = ?, contact_num = ? WHERE emp_id = ? AND is_emergency_contact = true";
-
-        try (PreparedStatement ps = conn.prepareStatement(sql2)) {
-            ps.setString(1, profile.getEmergencyName());
-            ps.setString(2, profile.getEmergencyContact());
-            ps.setObject(3, UUID.fromString(profile.getEmpId()));
-
-            int rows = ps.executeUpdate();
-
-            if (rows == 0) {
-                // ensure no duplicate emergency contact
-                String clearSql = "UPDATE employee_family SET is_emergency_contact = false WHERE emp_id = ?";
-                try (PreparedStatement psClear = conn.prepareStatement(clearSql)) {
-                    psClear.setObject(1, UUID.fromString(profile.getEmpId()));
-                    psClear.executeUpdate();
-                }
-
-                String insertSql = "INSERT INTO employee_family (fam_id, emp_id, first_name, contact_num, is_emergency_contact) VALUES (?, ?, ?, ?, true)";
-                try (PreparedStatement ps2 = conn.prepareStatement(insertSql)) {
-                    ps2.setObject(1, UUID.randomUUID());
-                    ps2.setObject(2, UUID.fromString(profile.getEmpId()));
-                    ps2.setString(3, profile.getEmergencyName());
-                    ps2.setString(4, profile.getEmergencyContact());
-                    ps2.executeUpdate();
-                }
-            }
-        }
-
+        // region [Archived - emergency contact ]
+        // String sql2 = "UPDATE employee_family SET first_name = ?, contact_num = ? WHERE emp_id = ? AND is_emergency_contact = true";
+        //
+        // try (PreparedStatement ps = conn.prepareStatement(sql2)) {
+        //     ps.setString(1, profile.getEmergencyName());
+        //     ps.setString(2, profile.getEmergencyContact());
+        //     ps.setObject(3, UUID.fromString(profile.getEmpId()));
+        //
+        //     int rows = ps.executeUpdate();
+        //
+        //     if (rows == 0) {
+        //         // ensure no duplicate emergency contact
+        //         String clearSql = "UPDATE employee_family SET is_emergency_contact = false WHERE emp_id = ?";
+        //         try (PreparedStatement psClear = conn.prepareStatement(clearSql)) {
+        //             psClear.setObject(1, UUID.fromString(profile.getEmpId()));
+        //             psClear.executeUpdate();
+        //         }
+        //
+        //         String insertSql = "INSERT INTO employee_family (fam_id, emp_id, first_name, contact_num, is_emergency_contact) VALUES (?, ?, ?, ?, true)";
+        //         try (PreparedStatement ps2 = conn.prepareStatement(insertSql)) {
+        //             ps2.setObject(1, UUID.randomUUID());
+        //             ps2.setObject(2, UUID.fromString(profile.getEmpId()));
+        //             ps2.setString(3, profile.getEmergencyName());
+        //             ps2.setString(4, profile.getEmergencyContact());
+        //             ps2.executeUpdate();
+        //         }
+        //     }
+        // }
+        // endregion
         return profile;
     }
 
@@ -82,6 +101,7 @@ public class EmployeeDAO {
                 p.setFamilyLastName(rs.getString("last_name"));
                 p.setIdentificationNum(rs.getString("identification_num"));
                 p.setContactNum(rs.getString("contact_num"));
+                p.setEmergencyContactStatus(rs.getBoolean("is_emergency_contact"));
 
                 list.add(p);
             }
@@ -117,18 +137,29 @@ public class EmployeeDAO {
 
     public void updateFamilyMember(EmployeeProfile profile) throws Exception {
 
+        // String sql = "UPDATE employee_family \n" +
+        //         "SET first_name=?, last_name=?, contact_num=? \n" +
+        //         "WHERE fam_id=? AND emp_id=?";
         String sql = "UPDATE employee_family \n" +
-                "SET first_name=?, last_name=?, contact_num=? \n" +
+                "SET first_name=?, last_name=?, identification_num=?, contact_num=?, is_emergency_contact=? \n" +
                 "WHERE fam_id=? AND emp_id=?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
+            // ps.setString(1, profile.getFirstName());
+            // ps.setString(2, profile.getFamilyLastName());
+            // ps.setString(3, profile.getContactNum());
+            // ps.setObject(4, UUID.fromString(profile.getFamId()));
+            // ps.setObject(5, UUID.fromString(profile.getEmpId()));
+
             ps.setString(1, profile.getFirstName());
             ps.setString(2, profile.getFamilyLastName());
-            ps.setString(3, profile.getContactNum());
-            ps.setObject(4, UUID.fromString(profile.getFamId()));
-            ps.setObject(5, UUID.fromString(profile.getEmpId()));
+            ps.setString(3, profile.getIdentificationNum());
+            ps.setString(4, profile.getContactNum());
+            ps.setBoolean(5, profile.getEmergencyContactStatus());
+            ps.setObject(6, UUID.fromString(profile.getFamId()));
+            ps.setObject(7, UUID.fromString(profile.getEmpId()));
 
             int rows = ps.executeUpdate();
 

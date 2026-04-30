@@ -76,6 +76,7 @@ public class HRMClient {
         }
         //endregion
 
+        // System CLI Interface
         while (true) {
 
             // ================= LOGIN =================
@@ -368,6 +369,9 @@ public class HRMClient {
         System.out.print("Contact Number: ");
         String contact = sc.nextLine();
 
+        System.out.print("IC: ");
+        String ic = sc.nextLine();
+
         System.out.print("Email: ");
         String email = sc.nextLine();
 
@@ -385,11 +389,11 @@ public class HRMClient {
             }
         }
 
-        System.out.print("Emergency Contact Name: ");
-        String ecName = sc.nextLine();
-
-        System.out.print("Emergency Contact Phone: ");
-        String ecPhone = sc.nextLine();
+        // System.out.print("Emergency Contact Name: ");
+        // String ecName = sc.nextLine();
+        //
+        // System.out.print("Emergency Contact Phone: ");
+        // String ecPhone = sc.nextLine();
 
         try {
             EmployeeProfile profile = new EmployeeProfile();
@@ -399,8 +403,9 @@ public class HRMClient {
             profile.setLastName(last);
             profile.setContactNum(contact);
             profile.setEmail(email);
-            profile.setEmergencyName(ecName);
-            profile.setEmergencyContact(ecPhone);
+            // profile.setEmergencyName(ecName);
+            // profile.setEmergencyContact(ecPhone);
+            profile.setIdentificationNum(ic);
             profile.setGender(gender);
             profile.setDob(dob);
 
@@ -610,10 +615,11 @@ public class HRMClient {
 
             for (EmployeeProfile f : list) {
                 System.out.println("----------------------------------");
-                System.out.println("Family ID : " + f.getFamId());
-                System.out.println("Name      : " + f.getFirstName() + " " + f.getFamilyLastName());
-                System.out.println("IC        : " + f.getIdentificationNum());
-                System.out.println("Contact   : " + f.getContactNum());
+                System.out.println("Family ID                   : " + f.getFamId());
+                System.out.println("Name                        : " + f.getFirstName() + " " + f.getFamilyLastName());
+                System.out.println("IC                          : " + f.getIdentificationNum());
+                System.out.println("Contact                     : " + f.getContactNum());
+                System.out.println("Emergency Contact Status    : " + (f.getEmergencyContactStatus() ? "Yes": "No"));
                 System.out.println("----------------------------------");
             }
 
@@ -669,11 +675,23 @@ public class HRMClient {
         System.out.print("New Last Name: ");
         String last = sc.nextLine();
 
+        System.out.print("New IC: ");
+        String ic = sc.nextLine();
+
         System.out.print("New Contact: ");
         String contact = sc.nextLine();
 
-        if (famId.isEmpty() || first.isEmpty() || last.isEmpty() || contact.isEmpty()) {
+        System.out.print("Set Is Emergency Contact? (y/n): ");
+        String emergency_status_input = sc.nextLine().trim();
+
+        if (famId.isEmpty() || first.isEmpty() || last.isEmpty() || ic.isEmpty() || contact.isEmpty() || emergency_status_input.isEmpty()) {
             System.out.println("Fields cannot be empty!");
+            return;
+        }
+
+        // Check field [Is Emergency Contact] validity
+        if (!emergency_status_input.equalsIgnoreCase("y") && !emergency_status_input.equalsIgnoreCase("n")){
+            System.out.println("Field [Is Emergency Contact] is not valid!");
             return;
         }
 
@@ -682,7 +700,9 @@ public class HRMClient {
         p.setEmpId(user.getEmpId());
         p.setFirstName(first);
         p.setFamilyLastName(last);
+        p.setIdentificationNum(ic);
         p.setContactNum(contact);
+        p.setEmergencyContactStatus(emergency_status_input.equalsIgnoreCase("y"));
 
         try {
             service.updateFamilyMember(p);
