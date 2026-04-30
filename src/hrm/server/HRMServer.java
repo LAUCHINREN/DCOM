@@ -7,6 +7,9 @@ import hrm.common.interfaces.LoginService;
 import hrm.server.impl.LoginServiceImpl;
 import hrm.common.interfaces.UserService;
 import hrm.server.impl.UserServiceImpl;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -21,11 +24,21 @@ public class HRMServer {
         System.out.println("=================================================");
 
         // To show SSL/TLS is actually work
-        System.setProperty("javax.net.debug", "ssl,handshake");
-        System.out.println("[SECURITY] SSL/TLS enabled for server.");
+        //System.setProperty("javax.net.debug", "ssl,handshake");
+        //System.out.println("[SECURITY] SSL/TLS enabled for server.");
 
-        System.setProperty("javax.net.ssl.keyStore", "serverkeystore.jks");
+        Path keyStorePath = Paths.get("serverkeystore.jks").toAbsolutePath();
+
+        if (!Files.exists(keyStorePath)) {
+            System.err.println("[Server] FATAL: serverkeystore.jks not found at:");
+            System.err.println(keyStorePath);
+            System.exit(1);
+        }
+
+        System.setProperty("javax.net.ssl.keyStore", keyStorePath.toString());
         System.setProperty("javax.net.ssl.keyStorePassword", "password");
+
+        System.out.println("[Server] Using keystore: " + keyStorePath);
 
         // Step 1: Verify DB connection FIRST before doing anything else
         // If this fails, the server will not start — fail fast
