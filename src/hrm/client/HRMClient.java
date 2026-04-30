@@ -16,6 +16,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class HRMClient {
     private static final String SERVER_HOST = "localhost";//"localhost";  // change to server IP e.g. "192.168.1.102"
@@ -26,15 +29,21 @@ public class HRMClient {
     public static void main(String[] args) {
 
         // To show SSL/TLS is actually work
-        System.setProperty("javax.net.debug", "ssl,handshake");
-        System.out.println("[SECURITY] SSL/TLS enabled for client.");
+        //System.setProperty("javax.net.debug", "ssl,handshake");
+        //System.out.println("[SECURITY] SSL/TLS enabled for client.");
 
-        System.setProperty(
-                "javax.net.ssl.trustStore",
-                "C:\\Users\\User\\Desktop\\APU\\year3\\sem1\\DCOM\\LeaveMgmtAsgmTest\\clienttruststore.jks"
-        );
+        Path trustStorePath = Paths.get("clienttruststore.jks").toAbsolutePath();
 
+        if (!Files.exists(trustStorePath)) {
+            System.err.println("[Client] FATAL: clienttruststore.jks not found at:");
+            System.err.println(trustStorePath);
+            return;
+        }
+
+        System.setProperty("javax.net.ssl.trustStore", trustStorePath.toString());
         System.setProperty("javax.net.ssl.trustStorePassword", "password");
+
+        System.out.println("[Client] Using truststore: " + trustStorePath);
         //region [console]
         Scanner sc = new Scanner(System.in);
         //endregion
